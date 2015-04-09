@@ -2,17 +2,17 @@
 ![Build Status](https://travis-ci.org/wpeterson/heroku-vector.svg?branch=master)
 
 ```bash
-  ___ ___                           __                  
- /   |   \   ____  _______   ____  |  | __ __ __        
-/    ~    \_/ __ \ \_  __ \ /  _ \ |  |/ /|  |  \       
-\    Y    /\  ___/  |  | \/(  <_> )|    < |  |  /       
- \___|_  /  \___  > |__|    \____/ |__|_ \|____/        
-      ____   ____/                 __   \/              
-      \   \ /   /  ____    ____  _/  |_   ____  _______ 
+  ___ ___                           __
+ /   |   \   ____  _______   ____  |  | __ __ __
+/    ~    \_/ __ \ \_  __ \ /  _ \ |  |/ /|  |  \
+\    Y    /\  ___/  |  | \/(  <_> )|    < |  |  /
+ \___|_  /  \___  > |__|    \____/ |__|_ \|____/
+      ____   ____/                 __   \/
+      \   \ /   /  ____    ____  _/  |_   ____  _______
        \   Y   / _/ __ \ _/ ___\ \   __\ /  _ \ \_  __ \
         \     /  \  ___/ \  \___  |  |  (  <_> ) |  | \/
-         \___/    \___  > \___  > |__|   \____/  |__|   
-                      \/      \/                        
+         \___/    \___  > \___  > |__|   \____/  |__|
+                      \/      \/
 ```
 
 Simple, linear auto scaling for Heroku dynos.
@@ -48,7 +48,7 @@ And then run the scaler proces:
 
 This auto scaler will sample metrics and use the metric values to scale different types of Heroku Dynos up or down.
 
-```ruby 
+```ruby
 
 # Example config.rb file
 HerokuVector.configure do |config|
@@ -78,6 +78,7 @@ HEROKU_API_KEY=1111111111111111
 REDIS_URL=redis://redis.yourcompany.com/
 SIDEKIQ_REDIS_NAMESPACE=sidekiq
 NEWRELIC_API_KEY=222222222222222
+PING_URL=https://www.yourcompany.com/
 ```
 
 ## Defining Your Dyno Scalers

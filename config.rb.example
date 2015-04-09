@@ -13,6 +13,16 @@ HerokuVector.configure do |config|
     max_value:      300
   })
 
+  # Scale 1 web dyno for each request timeout / failure
+  config.add_dyno_scaler('web', {
+    source:         HerokuVector::Source::Ping,
+    period:         60,
+    min_dynos:      1,
+    max_dynos:      10,
+    min_value:      0, # never scale down
+    max_value:      0  # scale up as soon as there is one timeout
+  })
+
   # Scale up Sidekiq workers when there are 6 or more busy threads per worker
   # Scale up two dynos at a time, but scale down 1 dyno at a time
   config.add_dyno_scaler('worker', {

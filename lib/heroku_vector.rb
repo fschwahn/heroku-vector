@@ -120,6 +120,14 @@ module HerokuVector
     def sidekiq_redis_namespace
       ENV['SIDEKIQ_REDIS_NAMESPACE']
     end
+
+    def ping_url
+      @ping_url ||= ENV['PING_URL']
+    end
+
+    def ping_url=(url)
+      @ping_url = url
+    end
   end
 end
 
