@@ -24,7 +24,7 @@ module HerokuVector::Source
     def newrelic_app
       # App Must be fetched from network every time, to get latest metrics
       if app_id
-        newrelic_account.applications.find {|app| app.id == app_id }
+        newrelic_account.applications.find {|app| app.id == app_id.to_i }
       else
         newrelic_account.applications.first
       end
