@@ -16,6 +16,7 @@ require 'heroku_vector/worker'
 require 'heroku_vector/version'
 require 'heroku_vector/engine/heroku'
 require 'heroku_vector/source/new_relic'
+require 'heroku_vector/source/ping'
 require 'heroku_vector/source/sidekiq'
 
 module HerokuVector
