@@ -26,7 +26,7 @@ module HerokuVector::Engine
       rescue
         nil
       end
-      @dynos_by_name.data
+      @dynos_by_name && @dynos_by_name.data
     end
 
     def get_dynos_by_name
