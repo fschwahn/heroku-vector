@@ -55,6 +55,7 @@ module HerokuVector
         evaluate_and_scale
       rescue => e
         logger.error "#{self.name} worker.run(): #{e}"
+        logger.error e.backtrace.join("\n")
       end
     end
 
