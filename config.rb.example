@@ -4,7 +4,8 @@
 HerokuVector.configure do |config|
 
   # Scale 1 web dyno for each 300rpm of traffic
-  config.add_dyno_scaler('web', {
+  config.add_dyno_scaler({
+    name:           'web',
     source:         HerokuVector::Source::NewRelic,
     period:         60,
     min_dynos:      1,
@@ -14,7 +15,8 @@ HerokuVector.configure do |config|
   })
 
   # Scale 1 web dyno for each request timeout / failure
-  config.add_dyno_scaler('web', {
+  config.add_dyno_scaler({
+    name:           'web',
     source:         HerokuVector::Source::Ping,
     period:         60,
     min_dynos:      1,
@@ -25,7 +27,8 @@ HerokuVector.configure do |config|
 
   # Scale up Sidekiq workers when there are 6 or more busy threads per worker
   # Scale up two dynos at a time, but scale down 1 dyno at a time
-  config.add_dyno_scaler('worker', {
+  config.add_dyno_scaler({
+    name:           'worker',
     source:         HerokuVector::Source::Sidekiq,
     period:         5,
     min_dynos:      1,

@@ -63,15 +63,15 @@ module HerokuVector
     end
 
     def dyno_scalers
-      @dyno_scalers ||= {}
+      @dyno_scalers ||= []
     end
 
     def dyno_scalers=(dyno_scalers)
       @dyno_scalers = dyno_scalers
     end
 
-    def add_dyno_scaler(name, options={})
-      dyno_scalers[name] = options
+    def add_dyno_scaler(options={})
+      dyno_scalers << options
     end
 
     def min_scale_time_secs

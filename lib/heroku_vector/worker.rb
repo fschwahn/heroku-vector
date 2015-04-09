@@ -37,8 +37,8 @@ module HerokuVector
     end
 
     def load_dyno_scalers
-      HerokuVector.dyno_scalers.each do |scaler_def|
-        name, options = scaler_def
+      HerokuVector.dyno_scalers.each do |options|
+        name = options.delete(:name)
         logger.info "Loading Scaler: #{name}, #{options.inspect}"
 
         @dyno_scalers << DynoScaler.new(name, options)
