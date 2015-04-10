@@ -4,11 +4,12 @@ module HerokuVector
   class Worker
     include HerokuVector::Helper
 
-    attr_accessor :options, :dyno_scalers, :engine
+    attr_accessor :options, :dyno_scalers, :engine, :scaling_throttlers
 
     def initialize(options={})
       @options = options
       @dyno_scalers = []
+      @scaling_throttlers = {}
     end
 
     def run
@@ -41,7 +42,8 @@ module HerokuVector
         name = options.delete(:name)
         logger.info "Loading Scaler: #{name}, #{options.inspect}"
 
-        @dyno_scalers << DynoScaler.new(name, options)
+        @scaling_throttlers[name] ||= ScalingThrottler.new
+        @dyno_scalers << DynoScaler.new(name, options.merge(scaling_throttler: @scaling_throttlers[name]))
       end
     end
 

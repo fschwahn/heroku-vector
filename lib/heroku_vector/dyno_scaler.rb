@@ -2,13 +2,11 @@ module HerokuVector
   class DynoScaler
     include HerokuVector::Helper
 
-    MIN_SCALE_TIME_DELTA_SEC = 5 * 60 # 5 mins
-
-    attr_accessor :source, :last_scale_time
+    attr_accessor :source
     attr_reader :name,
       :sampler, :period, :min_value, :max_value,
       :min_dynos, :max_dynos,
-      :engine, :scale_up_by, :scale_down_by
+      :engine, :scale_up_by, :scale_down_by, :scaling_throttler
 
     def initialize(name, options={})
       @name = name
@@ -24,6 +22,7 @@ module HerokuVector
       @scale_down_by = options[:scale_down_by] || 1
       @source = load_data_source(options)
       @engine = options[:engine] || Engine::Heroku.new
+      @scaling_throttler = options[:scaling_throttler] || ScalingThrottler.new
     end
 
     def load_data_source(options)
@@ -43,14 +42,14 @@ module HerokuVector
 
     def reset
       sampler.clear
-      @last_scale_time = nil
+      scaling_throttler.reset
     end
 
     def run
       begin
         collect_sample
         return unless enough_samples?
-        return if scaling_too_soon?
+        return if scaling_throttler.too_soon?
 
         evaluate_and_scale
       rescue => e
@@ -99,7 +98,7 @@ module HerokuVector
       new_amount = normalize_dyno_increment(new_amount)
       return if current_amount == new_amount
 
-      record_last_scale_event
+      scaling_throttler.touch
 
       engine.scale_dynos(self.name, new_amount)
     end
@@ -111,19 +110,8 @@ module HerokuVector
       ].max
     end
 
-    def record_last_scale_event
-      @last_scale_time = Time.now
-    end
-
     def enough_samples?
       sampler.full?
-    end
-
-    def scaling_too_soon?
-      return false unless last_scale_time
-      scale_delta = Time.now - last_scale_time
-
-      MIN_SCALE_TIME_DELTA_SEC >= scale_delta
     end
 
     def display_unit

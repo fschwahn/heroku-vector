@@ -5,6 +5,7 @@ describe HerokuVector::DynoScaler do
 
   let(:dyno_name) { 'web' }
   let(:mock_heroku) { mock('heroku') }
+  let(:mock_scaling_throttler) { mock('scaling_throttler') }
   let(:source) { HerokuVector::Source::NewRelic }
 
   let(:options) do
@@ -16,7 +17,8 @@ describe HerokuVector::DynoScaler do
       :max_dynos => 4,
       :min_value => 3000,
       :max_value => 5000,
-      :engine => mock_heroku
+      :engine => mock_heroku,
+      :scaling_throttler => mock_scaling_throttler
     }
   end
 
@@ -96,7 +98,7 @@ describe HerokuVector::DynoScaler do
 
     it 'should not evaluate scale if scaled recently' do
       scaler.stubs(:enough_samples? => true)
-      scaler.stubs(:scaling_too_soon? => true)
+      mock_scaling_throttler.stubs(:too_soon? => true)
 
       scaler.expects(:evaluate_and_scale).never
 
@@ -105,7 +107,7 @@ describe HerokuVector::DynoScaler do
 
     it 'should evaluate_and_scale w/ enough samples' do
       scaler.stubs(:enough_samples? => true)
-      scaler.stubs(:scaling_too_soon? => false)
+      mock_scaling_throttler.stubs(:too_soon? => false)
 
       scaler.expects(:evaluate_and_scale)
 
@@ -114,6 +116,10 @@ describe HerokuVector::DynoScaler do
   end
 
   describe '#reset' do
+    before do
+      mock_scaling_throttler.stubs(:reset)
+    end
+
     let (:scaler) do
       scaler = HerokuVector::DynoScaler.new(dyno_name, options)
       scaler.source = TestSource.new(1)
@@ -130,18 +136,17 @@ describe HerokuVector::DynoScaler do
       assert_equal 0, scaler.sampler.size
     end
 
-    it 'should reset last_scale_time' do
-      assert_equal nil, scaler.last_scale_time
-      scaler.record_last_scale_event
-      assert scaler.last_scale_time
-
+    it 'should reset dyno throttler' do
+      mock_scaling_throttler.expects(:reset)
       scaler.reset
-
-      assert_equal nil, scaler.last_scale_time
     end
   end
 
   describe '#evaluate_and_scale' do
+    before do
+      mock_scaling_throttler.stubs(:reset)
+    end
+
     let (:scaler) do
       scaler = HerokuVector::DynoScaler.new(dyno_name, options)
       scaler.source = TestSource.new(1)
@@ -208,33 +213,9 @@ describe HerokuVector::DynoScaler do
 
     it 'should scale within min/max' do
       mock_heroku.expects(:scale_dynos).with(scaler.name, 2)
+      mock_scaling_throttler.expects(:touch)
 
       scaler.scale_dynos(1, 2)
     end
   end
-
-  describe '#scaling_too_soon?' do
-    let (:scaler) do
-      scaler = HerokuVector::DynoScaler.new(dyno_name, options)
-    end
-
-    it 'should not be too soon w/out last_scale_time' do
-      assert_equal nil, scaler.last_scale_time
-      assert_equal false, scaler.scaling_too_soon?
-    end
-
-    it 'should be too soon near last_scale_time' do
-      scaler.last_scale_time = Time.now
-
-      assert_equal true, scaler.scaling_too_soon?
-    end
-
-    it 'should not be too soon after last_scale_time' do
-      threshold = HerokuVector::DynoScaler::MIN_SCALE_TIME_DELTA_SEC
-      scaler.last_scale_time = Time.now - threshold - 1
-
-      assert_equal false, scaler.scaling_too_soon?
-    end
-  end
-
 end
